@@ -13,7 +13,9 @@ import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.chtrembl.petstoreapp.config.Constants.CATEGORY;
 import static com.chtrembl.petstoreapp.config.Constants.OPERATION;
@@ -48,6 +50,14 @@ public class ProductManagementService {
                             this.sessionUser.getName()),
                     this.sessionUser.getCustomEventProperties(), null);
 
+            //to store information about who is making the request
+            Map<String, String> requestInfo = new HashMap<>();
+            requestInfo.put("username", this.sessionUser.getName());
+            requestInfo.put("sessionId", this.sessionUser.getSessionId());
+            requestInfo.put("category", category);
+            this.sessionUser.getTelemetryClient()
+                    .trackEvent("ProductCategoryRequest", requestInfo, null);
+
             products = productServiceClient.getProductsByStatus(AVAILABLE.getValue());
             this.sessionUser.setProducts(products);
 
@@ -65,6 +75,10 @@ public class ProductManagementService {
 
             log.info("Successfully retrieved {} products for category {} with tags {} [RequestID: {}, TraceID: {}]",
                     products.size(), category, tags, requestId, traceId);
+
+            //To count the number of items that were returned to the user
+            this.sessionUser.getTelemetryClient()
+                    .trackMetric("Number of Products returned to the user", products.size());
 
             return products;
         } catch (FeignException fe) {
