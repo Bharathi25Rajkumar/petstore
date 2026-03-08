@@ -32,7 +32,7 @@ public class ProductManagementService {
     private final ContainerEnvironment containerEnvironment;
     private final ProductServiceClient productServiceClient;
 
-    public Collection<Product> getProductsByCategory(String category, List<Tag> tags) {
+    public Collection<Product> getProductsByCategory(String category, List<Tag> tags) throws Exception {
         List<Product> products;
 
         MDC.put(OPERATION, "getProducts");
@@ -82,6 +82,10 @@ public class ProductManagementService {
             //quantity as metric
             this.sessionUser.getTelemetryClient()
                     .trackMetric("ProductsByCategoryCount", products.size());
+
+            if(true){
+                throw new Exception("Cannot move further");
+            }
 
             return products;
         } catch (FeignException fe) {
