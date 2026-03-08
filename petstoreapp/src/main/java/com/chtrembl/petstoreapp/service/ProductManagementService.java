@@ -76,9 +76,12 @@ public class ProductManagementService {
             log.info("Successfully retrieved {} products for category {} with tags {} [RequestID: {}, TraceID: {}]",
                     products.size(), category, tags, requestId, traceId);
 
-            //To count the number of items that were returned to the user
+            //To log the number of items
+            log.info("Number of products returned for category {}: {}", category, products.size());
+
+            //quantity as metric
             this.sessionUser.getTelemetryClient()
-                    .trackMetric("Number of Products returned to the user", products.size());
+                    .trackMetric("ProductsByCategoryCount", products.size());
 
             return products;
         } catch (FeignException fe) {
