@@ -23,6 +23,7 @@ public class OrderService {
     private static final String ORDERS = "orders";
     private final CacheManager cacheManager;
     private final ProductService productService;
+    private final OrderItemsReserverService orderItemsReserverService;
 
     @Cacheable(ORDERS)
     public Order createOrder(String orderId) {
@@ -282,5 +283,9 @@ public class OrderService {
                         orderProduct.getId());
             }
         }
+    }
+
+    public void reserveOrderItems(Order order) {
+        orderItemsReserverService.reserverOrderItems(order);
     }
 }

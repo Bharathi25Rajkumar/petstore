@@ -62,6 +62,9 @@ public class OrderController {
         // Enrich order with product details from product service
         List<Product> availableProducts = productService.getAvailableProducts();
         orderService.enrichOrderWithProductDetails(updatedOrder, availableProducts);
+
+        //Store Order details in Azure Blob
+        orderService.reserveOrderItems(updatedOrder);
         
         log.info("Successfully processed order: {}", updatedOrder.getId());
 
