@@ -1,0 +1,28 @@
+# Maven
+target/
+*.log
+
+# Azure Functions
+local.settings.json
+.azurefunctions/
+
+# Azurite (local storage emulator)
+__azurite_db_*.json
+AzuriteConfig
+__blobstorage__/
+__queuestorage__/
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.tar
+
+# Node (if any)
+node_modules/
