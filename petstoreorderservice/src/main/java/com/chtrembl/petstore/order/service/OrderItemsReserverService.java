@@ -16,7 +16,7 @@ public class OrderItemsReserverService {
     private final RestTemplate restTemplate;
 
     @Value("${petstore.service.orderItemsReserver.url}")
-    private String orderItemReserverUrl;
+    private String orderItemsReserverUrl;
 
     public void reserverOrderItems(Order order) {
         log.info("Calling OrderItemsReserver service for orderId={}", order.getId());
@@ -31,7 +31,7 @@ public class OrderItemsReserverService {
             HttpEntity<Order> entity = new HttpEntity<>(order, headers);
 
             ResponseEntity<String> response = restTemplate.exchange(
-                    "http://localhost:7071/api/OrderItemsReserver",
+                    String.format("%s/api/OrderItemsReserver", orderItemsReserverUrl),
                     HttpMethod.POST,
                     entity,
                     String.class
