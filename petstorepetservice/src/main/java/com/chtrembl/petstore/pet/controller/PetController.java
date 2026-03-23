@@ -1,11 +1,14 @@
 package com.chtrembl.petstore.pet.controller;
 
 import com.chtrembl.petstore.pet.model.Pet;
+import com.chtrembl.petstore.pet.model.Pet.Status;
 import com.chtrembl.petstore.pet.service.PetService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,11 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -29,6 +28,39 @@ import java.util.List;
 public class PetController {
 
 	private final PetService petService;
+
+	@Operation(
+			summary = "Create a new Pet",
+			description = "Creates a new pet along with category and tags, and stores it in PostgreSQL"
+	)
+	@ApiResponses(value = {
+			@ApiResponse(
+					responseCode = "200",
+					description = "Pet created successfully",
+					content = @Content(
+							mediaType = "application/json",
+							schema = @Schema(implementation = Pet.class)
+					)
+			),
+			@ApiResponse(
+					responseCode = "400",
+					description = "Invalid input data",
+					content = @Content
+			),
+			@ApiResponse(
+					responseCode = "500",
+					description = "Internal server error",
+					content = @Content
+			)
+	})
+	@PostMapping("/pet")
+	public ResponseEntity<Pet> createPet(@RequestBody(
+			description = "Pet object to be created",
+			required = true,
+			content = @Content(schema = @Schema(implementation = Pet.class))
+	) @org.springframework.web.bind.annotation.RequestBody Pet pet) {
+		return ResponseEntity.ok(petService.savePet(pet));
+	}
 
 	@Operation(
 			summary = "Find pets by status",
@@ -44,13 +76,17 @@ public class PetController {
 	public ResponseEntity<List<Pet>> findPetsByStatus(
 			@Parameter(description = "Status values that need to be considered for filter",
 					required = true,
-					example = "available")
-			@RequestParam(value = "status", required = true) List<String> status) {
+					example = "available",
+					array = @ArraySchema(schema = @Schema(implementation = Status.class))
+			)
+			@RequestParam(value = "status") List<String> status) {
 
 		log.info("Received GET request to /petstorepetservice/v2/pet/findByStatus with status: {}", status);
 
 		try {
-			List<Pet> pets = petService.findPetsByStatus(status);
+
+			List<Status> statuses = status.stream().map(Status::fromValue).toList();
+			List<Pet> pets = petService.findPetsByStatus(statuses);
 			log.info("Successfully found {} pets with status: {}", pets.size(), status);
 			return ResponseEntity.ok(pets);
 		} catch (Exception e) {
