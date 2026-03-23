@@ -1,8 +1,10 @@
 package com.chtrembl.petstore.product.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -17,10 +19,16 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Product {
+
+    @Id
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
 
     @Valid
+    @ManyToOne(fetch = FetchType.LAZY)
     private Category category;
 
     @NotNull
@@ -30,10 +38,16 @@ public class Product {
     @NotNull
     private String photoURL;
 
-    @Valid
-    @Builder.Default
+    @Basic(fetch = FetchType.LAZY)
+    @ManyToMany
+    @JoinTable(
+            name = "product_tag",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
     private List<Tag> tags = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
     private Status status;
 
     public Product name(String name) {

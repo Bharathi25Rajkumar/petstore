@@ -1,11 +1,13 @@
 package com.chtrembl.petstore.product.controller;
 
 import com.chtrembl.petstore.product.model.Product;
+import com.chtrembl.petstore.product.model.Product.Status;
 import com.chtrembl.petstore.product.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,11 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -29,6 +27,39 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+
+    @Operation(
+            summary = "Create a new Product",
+            description = "Creates a new product along with category and tags, and stores it in PostgreSQL"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Product created successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Product.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input data",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content
+            )
+    })
+    @PostMapping("/product")
+    public ResponseEntity<Product> createProduct(@RequestBody(
+            description = "Product object to be created",
+            required = true,
+            content = @Content(schema = @Schema(implementation = Product.class))
+    ) @org.springframework.web.bind.annotation.RequestBody Product product) {
+        return ResponseEntity.ok(productService.saveProduct(product));
+    }
 
     @Operation(
             summary = "Find products by status",
@@ -50,7 +81,8 @@ public class ProductController {
         log.info("Received GET request to /petstoreproductservice/v2/product/findByStatus with status: {}", status);
 
         try {
-            List<Product> products = productService.findProductsByStatus(status);
+            List<Status> statuses = status.stream().map(Status::fromValue).toList();
+            List<Product> products = productService.findProductsByStatus(statuses);
             log.info("Successfully found {} products with status: {}", products.size(), status);
             return ResponseEntity.ok(products);
         } catch (Exception e) {
