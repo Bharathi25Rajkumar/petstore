@@ -58,10 +58,6 @@ public class OrderController {
         log.info("Incoming POST request to /petstoreorderservice/v2/store/order with order: {}", order);
 
         Order updatedOrder = orderService.updateOrder(order);
-
-        // Enrich order with product details from product service
-        List<Product> availableProducts = productService.getAvailableProducts();
-        orderService.enrichOrderWithProductDetails(updatedOrder, availableProducts);
         
         log.info("Successfully processed order: {}", updatedOrder.getId());
 

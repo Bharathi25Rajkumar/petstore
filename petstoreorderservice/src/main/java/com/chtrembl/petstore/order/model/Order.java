@@ -1,5 +1,7 @@
 package com.chtrembl.petstore.order.model;
 
+import com.azure.spring.data.cosmos.core.mapping.Container;
+import com.azure.spring.data.cosmos.core.mapping.PartitionKey;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,6 +14,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +25,7 @@ import java.util.List;
 @Builder
 @EqualsAndHashCode(exclude = {"products"})
 @Schema(description = "Order entity representing a customer order")
+@Container(containerName = "orders", autoCreateContainer = false)
 public class Order {
 
 	@NotNull(message = "Order ID cannot be null")
@@ -33,6 +37,8 @@ public class Order {
 			description = "Order identifier (typically session ID)",
 			example = "68FAE9B1D86B794F0AE0ADD35A437428"
 	)
+	@Id
+	@PartitionKey
 	private String id;
 
 	@Size(max = 255, message = "Email must not exceed 255 characters")
